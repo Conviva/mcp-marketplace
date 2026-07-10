@@ -10,12 +10,20 @@ MCP endpoint into Claude Code and installs the companion skills
 
 ## Install
 
-**Claude Code** — one step; the plugin wires the MCP server **and** the skills:
+**Claude Code** — one step; the plugin wires the MCP server **and** the skills.
+Run each command on its own (the copy button copies one block at a time):
 
-```
-/plugin marketplace add https://github.com/Conviva/mcp-marketplace
-/plugin install conviva-dpi-mcp@conviva
-```
+1. Add the marketplace:
+
+   ```
+   /plugin marketplace add Conviva/mcp-marketplace
+   ```
+
+2. Install the plugin:
+
+   ```
+   /plugin install conviva-dpi-mcp@conviva
+   ```
 
 **Claude Desktop** — install the plugin (above) for the skills, then add the MCP
 server as a custom connector (Settings → Connectors) pointed at the endpoint below.
@@ -51,5 +59,5 @@ itself grant access to data. You must be an authorized Conviva user.
 
 ## Version
 
-`1.0.0` — see the release tags for history. Each published version
+`1.0.1` — see the release tags for history. Each published version
 corresponds to the identically-tagged commit in Conviva's internal repository.

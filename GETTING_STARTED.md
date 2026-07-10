@@ -54,6 +54,17 @@ both the tools and the skills.
 
 3. On first tool use, complete the **Okta login** in your browser.
 
+> [!NOTE]
+> **If the browser login lands on a `localhost` page and doesn't finish**
+> Claude Code defaults the OAuth callback host to `localhost`
+> (`http://localhost:<port>/callback`), so on a remote/SSH or container session
+> the browser can't reach it and the login appears to stall. **Workaround:** copy
+> the full `localhost` callback URL from the browser and paste it back into Claude
+> Code at the prompt — it converts the URL into a short user code you can approve
+> (including out-of-band, e.g. relayed from another machine). This is an upstream
+> Claude Code default (an open feature request tracks making the callback host
+> configurable), not a Conviva-side setting.
+
 That's it — the `conviva` MCP server starts automatically (tools appear
 as `mcp__conviva__…`) and the Context Center skills
 (`exploring-context-center`, `querying-predefined-metrics`,
@@ -200,6 +211,12 @@ Ask Claude to list the available tools, or run a simple Context Center query.
 
 - **401 / auth loop** — the OAuth flow didn't complete; retry the Okta login
   (manual config: clear `~/.mcp-auth/` first).
+- **Claude Code login stalls on a `localhost` callback page** — Claude Code
+  defaults the OAuth callback to `localhost`, which a remote/SSH or container
+  session can't reach. Copy the `localhost` callback URL from the browser and
+  paste it back into Claude Code to exchange it for a short approval code
+  (upstream default; an open Claude Code feature request tracks making it
+  configurable).
 - **`/plugin marketplace add` fails with `Unrecognized key: "displayName"`** —
   your Claude Code is older than **v2.1.143**. Update with `claude update` (or
   `npm i -g @anthropic-ai/claude-code@latest`) and retry.
