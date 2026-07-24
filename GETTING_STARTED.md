@@ -110,7 +110,7 @@ Pick **one** of the two ways to attach the hosted server.
 
 **Option A — Custom connector (recommended, no Node):**
 
-1. Open **Settings → Connectors**.
+1. Open **Settings → Connectors** (some builds label this **Customize → Connectors**).
 2. Scroll to the bottom and click **Add custom connector**.
 3. Enter the server URL (include `https://`) and click **Add**:
 
@@ -119,6 +119,16 @@ Pick **one** of the two ways to attach the hosted server.
    ```
 
 4. Complete the **Okta login** when prompted.
+
+> [!IMPORTANT]
+> **Team / Enterprise accounts**
+> The steps above are the self-serve path for **personal accounts**
+> (Free / Pro / Max). On **Team** and **Enterprise** plans, members can't add a
+> custom connector themselves — an **Owner** or **Primary Owner** must add it
+> **once** at **Organization settings → Connectors**. It then appears in each
+> member's connector list labelled **Custom**; every member clicks **Connect**
+> and completes the **Okta login** individually. The connector works the same
+> once added — only *who* adds it and *where* differ.
 
 **Option B — Manual config (`mcp-remote` bridge, needs Node.js):**
 
@@ -165,7 +175,7 @@ Pick **one** of the two ways to attach the hosted server.
 | Method | Where | You get | Needs |
 | --- | --- | --- | --- |
 | **Plugin** | Customize → Plugins | Skills | Node.js not required for skills |
-| **Custom connector** | Settings → Connectors | MCP tools | — |
+| **Custom connector** | Settings → Connectors *(org-level for Team/Enterprise)* | MCP tools | — |
 | **Manual config** | Developer → Edit Config | MCP tools | Node.js 18+ |
 
 For the full experience on Desktop, combine the **plugin** (skills) with a
@@ -223,8 +233,11 @@ Ask Claude to list the available tools, or run a simple Context Center query.
 - **Tools missing in Claude Code** — run `/plugin`, confirm `conviva-dpi-mcp` is
   enabled, and start a new session so the MCP server boots.
 - **Tools missing in Desktop** — the plugin alone doesn't add tools; complete
-  **Step 2** (connector or manual config). For manual config, check
-  `claude_desktop_config.json` is valid JSON and that you fully restarted. Logs:
+  **Step 2** (connector or manual config). On **Team/Enterprise** plans the
+  custom connector must first be added by an **Owner** at **Organization settings
+  → Connectors** — members can only **Connect** to it, not add it. For manual
+  config, check `claude_desktop_config.json` is valid JSON and that you fully
+  restarted. Logs:
   `~/Library/Logs/Claude/mcp*.log` (macOS) /
   `%APPDATA%\Claude\logs\mcp*.log` (Windows).
 - **Tools missing in Cursor** — check `mcp.json` is valid JSON and the `conviva`

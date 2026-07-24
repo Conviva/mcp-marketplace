@@ -26,7 +26,9 @@ Run each command on its own (the copy button copies one block at a time):
    ```
 
 **Claude Desktop** — install the plugin (above) for the skills, then add the MCP
-server as a custom connector (Settings → Connectors) pointed at the endpoint below.
+server as a custom connector (Settings → Connectors) pointed at the endpoint
+below. On **Team/Enterprise** plans an Owner must add it at **Organization
+settings → Connectors** first; members then click **Connect**.
 
 **Cursor** — add the server to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json`
 (project). This gives you the **tools** (skills are Claude-plugin-only):
@@ -59,5 +61,5 @@ itself grant access to data. You must be an authorized Conviva user.
 
 ## Version
 
-`1.0.1` — see the release tags for history. Each published version
+`1.1.1` — see the release tags for history. Each published version
 corresponds to the identically-tagged commit in Conviva's internal repository.
