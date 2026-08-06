@@ -126,8 +126,8 @@ with `context-center-nexa-semantic-search`, then hydrate by id with
   `assetType: insights-finder`, no get-by-id.
 - **Knowledge `score`** is only populated by semantic search. A higher score is a
   closer semantic match; still confirm relevance against the hit's `summary`.
-- **Lists return `{ items, pagination }`.** Check `pagination.hasMore` before
-  concluding a result set is complete.
+- **Lists return `{ items, pagination }`.** Check `pagination.hasMore` — and
+  `scope`, if present — before concluding a result set is complete.
 - **Quote the summary, verify with the asset.** A knowledge summary is generated
   text; when precision matters (the exact steps, validity, asset ids), cite the
   hydrated asset, not the summary. (Raw match SQL is hidden in both layers.)
