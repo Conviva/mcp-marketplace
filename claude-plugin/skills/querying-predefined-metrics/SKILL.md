@@ -51,13 +51,15 @@ timezone-aware datetime is step 4 below.)
 
 ## Workflow
 
-1. **Establish the c3 account (required).** Account-scoped tools require an
-   explicit `c3AccountName` — there is **no safe default**. An OAuth caller may have
-   many accounts and the primary is not guaranteed, so never assume one. **Never
-   invent or guess a name** — guessing (e.g. appending a region like `…-US`) earns a
-   403/404. If the user named an account, use it verbatim. If they didn't, call
-   `identity-c3-account-list`: use the returned account when there is exactly one,
-   or ask the user which when there are several.
+1. **Establish the c3 account (often automatic).** `c3AccountName` is optional on
+   account-scoped tools: if the user named an account, pass it verbatim; otherwise
+   just omit it — when your login can access exactly one c3 account, the tool
+   resolves it for you, no extra call needed. Only when a login can access several
+   accounts does the call fail; that error names every available account, so ask
+   the user which one and retry with that exact name (`identity-c3-account-list`
+   also lists the options up front if you want them before calling anything).
+   **Never invent or guess a name** — guessing (e.g. appending a region like
+   `…-US`) earns a 403/404.
 2. **Resolve the metric to an id — by tool call, not from memory.** If you don't
    already have an `m_*` id **from a tool call in this conversation**, use the
    **exploring-context-center** skill to find it: search the knowledge layer by
