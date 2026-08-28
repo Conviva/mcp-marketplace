@@ -3,16 +3,14 @@ name: exploring-context-center
 description: >
   Finds Conviva Context Center assets by meaning or topic, then hydrates the full
   structured definition — search the knowledge layer first, then fetch the asset.
-  TRIGGER when: a user wants to find/understand a pattern, metric, dimension,
-  segment, or critical event but does not have its id, asks "what does an account
-  track about X", or wants to explore a customer's Context Center; OR when you are
-  about to call context-center-nexa-semantic-search.
-  DO NOT TRIGGER when: the user already has an exact asset id and just wants it
-  fetched (e.g. "fetch pattern p_…", "get the definition of metric m_…") — there
-  is nothing to discover, so call context-center-asset-get directly with the
-  matching assetType; or is retrieving an Insights behavior segment (use
-  retrieving-behavior-segment-details — Insights behavior segments are a different
-  system).
+  TRIGGER when: the user wants to find or understand a pattern, metric, dimension
+  or critical event without knowing its id, asks what an account tracks about X,
+  or wants to explore a customer's Context Center; OR you are about to call
+  context-center-nexa-semantic-search.
+  DO NOT TRIGGER when: the user already has the exact asset id — call
+  context-center-asset-get directly; or says "segment" in any form — segments
+  live in Insights, not Context Center, so use
+  retrieving-behavior-segment-details.
 ---
 
 # Exploring Context Center
@@ -86,14 +84,16 @@ with `context-center-nexa-semantic-search`, then hydrate by id with
      values) and optionally add `terms` for exact substrings alongside the
      semantic query.
    - Scope `categories` to the asset type you want (`pattern`, `metric`,
-     `dimension`, `segment`, `critical_event`, `dashboard`, `customer_brief`).
+     `dimension`, `critical_event`, `dashboard`, `customer_brief`), or
+     `context-center-nexa-categories-list` for the account's real list.
 3. **Read the pointer.** Each knowledge hit's `source_info.detail` gives
    `asset_id` + `asset_type`. That is your handle into the asset layer.
 4. **Hydrate the asset.** Call `context-center-asset-get` with that `asset_type`
    (see reference.md for the map) and the `asset_id` — e.g. `assetType: pattern`,
-   `assetType: metric`, `assetType: critical-event`, `assetType: dimension`,
-   `assetType: segment`. This returns the real definition the summary only
-   describes.
+   `assetType: metric`, `assetType: critical-event`, `assetType: dimension`.
+   This returns the real definition the summary only describes. A
+   `behavior_segment` hit is the exception — its `asset_id` goes to
+   `insights-behavior-segment-get` as `segmentId`, not to this tool.
 5. **Follow related ids if needed.** Assets nest: **metric → pattern →
    critical_event**. A hydrated asset's own id fields point at its relatives —
    e.g. a metric's `definition.calculated_with` names its pattern id, a

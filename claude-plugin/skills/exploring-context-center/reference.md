@@ -17,10 +17,11 @@ from this set. Each maps to an `assetType` value on `context-center-asset-get` /
 | `metric` | `metric` | `definition.calculated_with` points at its pattern id |
 | `critical_event` | `critical-event` | the raw-event matcher; its raw match SQL (`expression`) is hidden — use name + description |
 | `dimension` | `dimension` | |
-| `segment` | `segment` | |
 | `template` | `template` | |
 | `insights_finder` | `insights-finder` | **list-only** — `context-center-asset-list` only, no get-by-id route upstream |
-| `dashboard` | — | **knowledge-only here**; no asset get tool (removed from this MCP) |
+| `dashboard` | `dashboard` | bundles saved analysis widgets |
+| `behavior_segment` | — | **NOT a Context Center asset.** `asset_id` is an Insights segment id (e.g. `arch_ccc_dlv`) — pass it to `insights-behavior-segment-get` as `segmentId`. See `retrieving-behavior-segment-details`. |
+| `segment` | — | retired 2026-08-27. It collided with Insights behavior segments and, across prod, only ever held the system-created `__conviva_identity__` client_id→identity file. "Segment" now always means a behavior segment. |
 | `customer_brief` | — | knowledge-only; a free-text brief about the customer, no asset |
 
 `context-center-asset-get` fetches one asset by id + `assetType`;
