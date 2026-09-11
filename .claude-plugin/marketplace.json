@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "conviva",
-  "description": "Conviva's Claude plugins for the Conviva DPI MCP server.",
+  "description": "Conviva's Claude Code and Cursor plugins for the Conviva DPI MCP server.",
   "owner": {
     "name": "Conviva",
     "url": "https://github.com/Conviva/mcp-marketplace"
@@ -10,10 +10,11 @@
     {
       "name": "conviva-dpi-mcp",
       "displayName": "Conviva DPI MCP",
-      "description": "Wires the hosted Conviva DPI MCP endpoint and installs the companion skills (exploring-context-center, querying-predefined-metrics, retrieving-behavior-segment-details).",
-      "source": "./claude-plugin",
+      "description": "Wires the hosted Conviva DPI MCP endpoint and installs the companion skills (exploring-context-center, querying-predefined-metrics, retrieving-behavior-segment-details, finding-replay-candidates, analyzing-session-replays).",
+      "source": "./",
       "category": "data",
-      "homepage": "https://github.com/Conviva/mcp-marketplace"
+      "homepage": "https://github.com/Conviva/mcp-marketplace",
+      "version": "1.4.1"
     }
   ]
 }

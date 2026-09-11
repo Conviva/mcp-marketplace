@@ -3,12 +3,15 @@
 Connect to the hosted **Conviva DPI MCP** server. The steps depend on
 which client you use:
 
-- **Claude Code (CLI)** — **one step**. Install the plugin; it wires the MCP
-  server **and** the Context Center skills automatically.
-- **Claude Desktop** — **two steps**. Install the plugin (for the skills), then
-  add the MCP server separately (custom connector or manual config).
-- **Cursor** — add the remote MCP server to `mcp.json`. Cursor doesn't use Claude
-  plugins, so you get the **tools** (not the companion skills).
+- **Claude Code (CLI or desktop app)** — **one step**. Install the plugin; it
+  wires the MCP server **and** the Context Center skills automatically.
+- **Claude Desktop** — **one step**. Add the marketplace and install the plugin;
+  you get the skills **and** the MCP server. (A custom connector is still there
+  if you want the tools without the skills.)
+- **Cursor** — install the plugin from a marketplace for **tools and skills**,
+  or add just the MCP server to `mcp.json` for the **tools** alone.
+
+Already installed? Jump to [Updating the plugin](#updating-the-plugin).
 
 The hosted endpoint is:
 
@@ -21,17 +24,18 @@ paste.
 
 > [!TIP]
 > **When is Node.js needed?**
-> The **plugin** (Claude Code) and the **custom connector** (Desktop) connect to
-> the endpoint natively — **no Node required**. Only the Desktop **manual config**
-> uses the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) bridge, which
-> runs on **Node.js 18+**.
+> The **plugin** (Claude Code, Cursor) and the **custom connector** (Desktop)
+> connect to the endpoint natively — **no Node required**. Only the Desktop
+> **manual config** uses the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote)
+> bridge, which runs on **Node.js 18+**.
 
 ---
 
-## Claude Code (CLI) — one step
+## Claude Code — one step
 
 Claude Code honors the plugin's bundled MCP server, so a single install gets you
-both the tools and the skills.
+both the tools and the skills. The steps below are identical in the terminal CLI
+and in the Claude Code desktop app — both read the same `/plugin` marketplaces.
 
 > [!IMPORTANT]
 > **Requires Claude Code v2.1.143 or newer.** Older versions can't parse the
@@ -66,9 +70,9 @@ both the tools and the skills.
 > configurable), not a Conviva-side setting.
 
 That's it — the `conviva` MCP server starts automatically (tools appear
-as `mcp__conviva__…`) and the Context Center skills
-(`exploring-context-center`, `querying-predefined-metrics`,
-`retrieving-behavior-segment-details`) load alongside them.
+as `mcp__conviva__…`) and the companion skills (`exploring-context-center`,
+`querying-predefined-metrics`, `retrieving-behavior-segment-details`,
+`finding-replay-candidates`, `analyzing-session-replays`) load alongside them.
 
 > [!TIP]
 > **Install scope**
@@ -81,32 +85,40 @@ Conviva tools.
 
 ---
 
-## Claude Desktop — two steps
+## Claude Desktop
 
-Desktop installs the plugin's **skills**, but does **not** auto-wire the
-plugin's bundled MCP server. So you install the plugin for the skills, then
-attach the MCP server yourself.
+Adding the marketplace and installing the plugin gets you **all the skills and
+the `conviva` MCP server** — the same package Claude Code installs.
 
-### Step 1 — Install the plugin (skills)
+### Install the plugin
 
 1. In Claude, open **Customize** in the left sidebar, then the **Plugins** tab.
-2. In the **Personal plugins** section, click **+** → **Add marketplace** →
-   **Add from a repository**.
-3. Enter the repo URL:
+2. Switch to the **Personal** tab and click **+**.
+3. Paste the repo URL, leave **Sync automatically** on, and click **Sync**:
 
    ```
    https://github.com/Conviva/mcp-marketplace
    ```
 
-4. From the `conviva` marketplace, install **Conviva DPI MCP**
-   (`conviva-dpi-mcp`).
+   ![Claude's Add marketplace dialog: the repo URL in the URL field, "Sync automatically" enabled, and a Sync button](./images/getting-started/claude-add-marketplace.png)
 
-This gives you the Context Center skills. (Plugins also work in Claude on the web
-and in Cowork; in Cowork, open the **Cowork** tab first, then **Customize**.)
+4. From the marketplace entry that appears — Claude lists it under the **repo
+   name**, so it reads `mcp-marketplace` rather than `conviva` —
+   install **Conviva DPI MCP** (`conviva-dpi-mcp`).
+5. On first tool use, complete the **Okta login** in your browser.
 
-### Step 2 — Add the MCP server (tools)
+Plugins work the same in Claude on the web and in Cowork; in Cowork, open the
+**Cowork** tab first, then **Customize**.
 
-Pick **one** of the two ways to attach the hosted server.
+> [!TIP]
+> **Leave "Sync automatically" on**
+> It keeps the plugin current as we publish releases — see
+> [Updating the plugin](#updating-the-plugin) for the manual path.
+
+### Alternative — attach the MCP server without the plugin
+
+If you want the **tools only** (no companion skills), skip the plugin and add
+the hosted server directly. Pick **one** of the two ways — not both.
 
 **Option A — Custom connector (recommended, no Node):**
 
@@ -174,19 +186,65 @@ Pick **one** of the two ways to attach the hosted server.
 
 | Method | Where | You get | Needs |
 | --- | --- | --- | --- |
-| **Plugin** | Customize → Plugins | Skills | Node.js not required for skills |
-| **Custom connector** | Settings → Connectors *(org-level for Team/Enterprise)* | MCP tools | — |
-| **Manual config** | Developer → Edit Config | MCP tools | Node.js 18+ |
+| **Plugin** *(recommended)* | Customize → Plugins → Personal | Skills **and** MCP tools | — |
+| **Custom connector** | Settings → Connectors *(org-level for Team/Enterprise)* | MCP tools only | — |
+| **Manual config** | Developer → Edit Config | MCP tools only | Node.js 18+ |
 
-For the full experience on Desktop, combine the **plugin** (skills) with a
-**connector** or **manual config** (tools).
+The plugin is the one-step path. Use a connector or manual config only if you
+want the tools without the companion skills.
 
 ---
 
 ## Cursor
 
-Cursor connects to remote MCP servers natively — no plugin, no `mcp-remote`. You
-get the **tools** (the companion skills are Claude-plugin-only).
+### Option A — install the plugin (tools **and** skills)
+
+Cursor installs plugins from a marketplace. Import this repository as one, then
+install the plugin from it.
+
+**Just for you (Personal marketplace):**
+
+1. Open **Customize** in the sidebar and select the **Personal** tab.
+2. Click **+ Add Marketplace → Import from GitHub**.
+
+   ![Cursor's Customize page with the Personal tab selected and the Add Marketplace menu open, showing Create New, Import from GitHub and Import from Disk](./images/getting-started/cursor-add-marketplace.png)
+
+3. Enter the repo URL, leave **Scope** on **User**, and click **Import**:
+
+   ```
+   https://github.com/Conviva/mcp-marketplace
+   ```
+
+   ![Cursor's Import Marketplace dialog: the repo URL in the Repository field and Scope set to User](./images/getting-started/cursor-import-marketplace.png)
+
+4. The `conviva` marketplace now has its own tab. Find **Conviva DPI MCP**
+   (`conviva-dpi-mcp`) and click **Add**.
+
+**For a whole team (admin, once per org — Teams/Enterprise):** open **Dashboard
+→ Plugins → Team Marketplaces → Add Marketplace**, choose **Import from Repo**,
+and enter `https://github.com/Conviva/mcp-marketplace`. Set **Marketplace Access** and, optionally, **Enable
+Auto Refresh**. Members then install it from **Customize**, choosing user or
+project scope.
+
+Either way, finish by authenticating the bundled `conviva` MCP server with
+**Okta** in your browser, then open a new chat and confirm the server and the
+skills are enabled in **Customize**. Skills are invoked from the `/` menu.
+
+If the GitHub import doesn't take, that's a
+[known Cursor bug](#known-cursor-bug) — clone the repo and use **Import from
+Disk** instead.
+
+> [!TIP]
+> **Testing with a local copy?**
+> A marketplace install takes precedence over a same-named plugin in
+> `~/.cursor/plugins/local`. Remove any local copy you were testing with, so
+> you're sure which one you're looking at.
+
+### Option B — MCP server only (tools, no skills)
+
+Use this if you'd rather not add a marketplace at all. Cursor connects to remote
+MCP servers natively — no plugin, no `mcp-remote`. You get the **tools** but not
+the companion skills.
 
 1. Add the server to your Cursor MCP config — **`~/.cursor/mcp.json`** (global,
    all projects) or **`.cursor/mcp.json`** (this project only):
@@ -201,17 +259,153 @@ get the **tools** (the companion skills are Claude-plugin-only).
    }
    ```
 
-   Or use **Cursor Settings → Tools & MCP → Add** (the "Customize" sidebar) and
-   enter the URL.
+   Or use **Customize → MCP → Add** and enter the URL.
 
 2. On first use Cursor opens a browser for **Okta login** (OAuth) — no key to
    paste. Cursor registers with the server automatically (dynamic client
    registration); its OAuth callback is `cursor://anysphere.cursor-mcp/oauth/callback`
    (desktop app) or `https://www.cursor.com/agents/mcp/oauth/callback` (web).
 
-3. Under **Settings → Tools & MCP**, confirm the `conviva` server is toggled on;
-   its tools then appear under **Available Tools** in chat. MCP logs live in the
+3. Under **Customize**, confirm the `conviva` server is toggled on; its tools
+   then appear under **Available Tools** in chat. MCP logs live in the
    **Output panel → "MCP Logs"**.
+
+---
+
+## Updating the plugin
+
+### Claude Code (CLI or desktop app)
+
+Run these in a session, one at a time:
+
+```text
+/plugin marketplace update conviva
+/plugin update conviva-dpi-mcp@conviva
+/reload-plugins
+```
+
+`/reload-plugins` applies the new version without restarting; it needs Claude
+Code **v2.1.260 or newer**, and in the desktop app it does **not** reconnect the
+plugin's MCP server — start a new session to pick up server changes.
+
+The same thing from a shell (useful in scripts) — pass the scope you installed
+with, `user` by default:
+
+```sh
+claude plugin marketplace update conviva
+claude plugin update conviva-dpi-mcp@conviva --scope user
+```
+
+> [!TIP]
+> **Let Claude Code do it**
+> Open `/plugin` → **Marketplaces** → `conviva` → **Enable
+> auto-update**. Claude Code then refreshes the marketplace and updates the
+> plugin in the background shortly after each session starts, and prompts you to
+> run `/reload-plugins`. Third-party marketplaces have auto-update **off** by
+> default, so this is opt-in.
+
+### Claude Desktop
+
+Updates are handled per **marketplace**, not per plugin. Open **Customize →
+Plugins**, switch to the **Personal** tab, and click the **⋯** next to the
+marketplace you added (listed by repo name, `mcp-marketplace`):
+
+![Claude's plugin directory: the mcp-marketplace menu showing the synced commit, a Sync automatically toggle, Check for updates, and Remove](./images/getting-started/claude-check-for-updates.png)
+
+- **Sync automatically** (on by default when you added it) keeps the plugin
+  current as we publish.
+- **Check for updates** pulls immediately.
+- The **Synced commit** line tells you exactly which revision you're on — compare
+  it with the repo's latest commit if you're unsure.
+
+Same place in Claude on the web and in Cowork. If you attached the server as a
+**connector** instead of installing the plugin, that connector is independent:
+the endpoint doesn't change between releases, so you never need to re-add it —
+only re-authenticate if Claude prompts you.
+
+### Cursor
+
+Cursor keeps marketplace plugins up to date on its own — there is no update
+button to press. New releases arrive through whichever marketplace you imported
+this repo into:
+
+- **Personal marketplace:** Cursor re-indexes the repo and updates the plugin.
+  Restart Cursor and start a new chat to load the new skills. The marketplace
+  stays registered under **Customize → Personal** — you don't re-import it per
+  release.
+- **Team marketplace:** an admin clicks **Refresh** in **Dashboard → Plugins**,
+  or turns on **Auto Refresh** so pushes to the tracked branch are re-indexed
+  (at most once every 10 minutes). Members pick up the refreshed version.
+
+Confirm the version *and* the skill list under **Customize** — a plugin can show
+a new version number while a chat still holds the previously loaded skills.
+
+#### Known Cursor bug
+
+> [!WARNING]
+> **A GitHub marketplace can fail to install or update**
+> Cursor's marketplace sync sometimes goes stale. The **Import from GitHub**
+> either doesn't take, or it installs once and then stays pinned to an old
+> commit with **Update** / **Reinstall** doing nothing. It's a Cursor-side issue —
+> publishing another release on our end doesn't clear it. Background:
+> [plugin update / version management](https://forum.cursor.com/t/plugin-update-version-management-how-are-installed-plugins-updated/166454/5)
+> and [marketplace sync is stale](https://forum.cursor.com/t/plugin-marketplace-sync-is-stale-causing-update-reinstall-in-settings-to-have-no-effect/165660/5).
+>
+> **Workaround — install it as a local development plugin.** That path indexes
+> the plugin from disk as it is right now and bypasses the stuck marketplace
+> cache entirely.
+>
+> 1. **Remove the marketplace install first.** A marketplace install always takes
+>    precedence over a same-named plugin in `~/.cursor/plugins/local/`, so
+>    leaving it registered means nothing changes.
+> 2. Clone the repo straight into Cursor's local-plugin folder:
+>
+>    ```bash
+>    git clone https://github.com/Conviva/mcp-marketplace.git ~/.cursor/plugins/local/conviva-dpi-mcp
+>    ```
+>
+>    It has to be a **real directory**. Cursor rejects a symlink whose target
+>    lives outside that folder — `loadUserLocalPlugin … rejected: symlink target
+>    … is outside …` — even though its docs suggest symlinking a checkout.
+> 3. Run **Developer: Reload Window** in Cursor (or restart it), then confirm the
+>    plugin and its skills under **Customize**.
+> 4. **To update, just pull and reload:**
+>
+>    ```bash
+>    git -C ~/.cursor/plugins/local/conviva-dpi-mcp pull
+>    ```
+>
+>    followed by **Developer: Reload Window**. No cache to clear — this path
+>    re-reads the directory every load.
+>
+> Clearing `~/.cursor/plugins/cache` and `~/.cursor/plugins/marketplaces`
+> **doesn't** reliably move the pin, so don't count on that.
+>
+> **GUI alternative — Import from Disk.** If you'd rather not use the command
+> line, clone the repo anywhere and add it via **Customize → Personal →
+> + Add Marketplace → Import from Disk**:
+>
+> ![Cursor's Add Marketplace menu with Import from Disk highlighted](./images/getting-started/cursor-import-from-disk.png)
+>
+> This also bypasses the GitHub sync, but it comes with its own catch: the
+> imported marketplace stays pinned to the commit Cursor first indexed and never
+> re-fetches, so `git pull` alone won't move it. To update one of these you have
+> to drop the pinned clone as well:
+>
+> ```bash
+> git -C /path/to/your/clone pull
+> rm -rf ~/.cursor/plugins/marketplaces/_ ~/.cursor/plugins/cache/conviva
+> ```
+>
+> then **Developer: Reload Window**. The local-plugin path above avoids this
+> entirely, which is why it's the one to prefer.
+
+If you added the server via Option B instead, there is nothing to update: the
+endpoint is fixed and new server-side tools appear on their own.
+
+Updating the plugin updates its MCP configuration and its bundled skills. The
+hosted MCP service is deployed separately — server-side tool changes reach you
+without a plugin update.
 
 ---
 
@@ -232,38 +426,34 @@ Ask Claude to list the available tools, or run a simple Context Center query.
   `npm i -g @anthropic-ai/claude-code@latest`) and retry.
 - **Tools missing in Claude Code** — run `/plugin`, confirm `conviva-dpi-mcp` is
   enabled, and start a new session so the MCP server boots.
-- **Tools missing in Desktop** — the plugin alone doesn't add tools; complete
-  **Step 2** (connector or manual config). On **Team/Enterprise** plans the
-  custom connector must first be added by an **Owner** at **Organization settings
-  → Connectors** — members can only **Connect** to it, not add it. For manual
-  config, check `claude_desktop_config.json` is valid JSON and that you fully
-  restarted. Logs:
+- **Tools missing in Desktop** — confirm the plugin is installed and enabled
+  under **Customize → Plugins → Personal**, then restart Claude. If you took the
+  connector route instead: on **Team/Enterprise** plans the custom connector must
+  first be added by an **Owner** at **Organization settings → Connectors** —
+  members can only **Connect** to it, not add it. For manual config, check
+  `claude_desktop_config.json` is valid JSON and that you fully restarted. Logs:
   `~/Library/Logs/Claude/mcp*.log` (macOS) /
   `%APPDATA%\Claude\logs\mcp*.log` (Windows).
-- **Tools missing in Cursor** — check `mcp.json` is valid JSON and the `conviva`
-  server is toggled on under **Settings → Tools & MCP**; read the **Output panel
-  → "MCP Logs"** and retry the OAuth login.
-- **Skills missing** — confirm the plugin is installed/enabled and reload the
-  conversation. (Skills are Claude-plugin-only; Cursor doesn't load them.)
-
-## Local development: Redis for nexa-analyze
-
-The async `nexa-analyze` / `nexa-analyze-result` tools use a Redis-backed job
-store. Before using them locally, start the bundled Redis via Docker Compose:
-
-```bash
-docker compose up -d redis
-```
-
-The config default (`config/default.json`) already points at
-`redis://localhost:6379`, so no further setup is needed. Without Redis running,
-those two tools return a `503` — everything else in the server works fine.
-`npm test` needs no Redis (it's mocked in unit tests).
+- **Desktop stuck on an old version** — open **⋯ → Check for updates** on the
+  marketplace and compare its **Synced commit** with the repo's latest commit.
+- **Tools missing in Cursor** — under **Customize**, confirm the `conviva` MCP
+  server is toggled on (and, with Option A, that the plugin itself is enabled);
+  with Option B, check `mcp.json` is valid JSON. Read the **Output panel →
+  "MCP Logs"** and retry the OAuth login.
+- **Skills missing in Cursor** — skills only come with the **plugin** (Option A).
+  An `mcp.json` entry gives you tools alone. Confirm the plugin is installed and
+  enabled in **Customize**, then start a new chat.
+- **Skills missing** — confirm the plugin is installed/enabled and start a new
+  conversation. After an update, run `/reload-plugins` (Claude Code) — a version
+  bump alone doesn't swap the skills a running session already loaded.
 
 ## References
 
 - [Use plugins in Claude](https://support.claude.com/en/articles/13837440-use-plugins-in-claude)
 - [Claude Code plugins reference](https://code.claude.com/docs/en/plugins-reference)
+- [Claude Code plugin updates](https://code.claude.com/docs/en/discover-plugins#configure-auto-updates)
+- [Cursor plugins](https://cursor.com/docs/plugins) — marketplaces, install scopes, Auto Refresh
+- [Cursor plugins reference](https://cursor.com/docs/reference/plugins) — manifest and `mcp.json` format
 - [Cursor — Model Context Protocol](https://cursor.com/docs/mcp)
 - [Connect to remote MCP servers (Custom Connectors)](https://modelcontextprotocol.io/docs/develop/connect-remote-servers)
 - [Connect to local MCP servers (Edit Config)](https://modelcontextprotocol.io/docs/develop/connect-local-servers)

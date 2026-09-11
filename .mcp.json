@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "conviva": {
+      "type": "http",
+      "url": "https://dpi-mcp.conviva.com/mcp"
+    }
+  }
+}
