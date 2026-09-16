@@ -122,6 +122,16 @@ Three properties of `user_ids` you must carry into any answer:
 
 ### `insights-behavior-segment-analyze` — computed figures
 
+**The one optional input worth knowing: `timeoutMs`.** The conversion rate is measured
+over the journey window the segment itself stores — how long a device may take from the
+first step of the conversion journey to the last. Pass `timeoutMs` (a whole number of
+**milliseconds**, minimum 1000) only when the user asks for a specific one: "converted
+within an hour" → `3600000`. Omit it otherwise. It changes the conversion rate only —
+device counts and the segment's exclusion rules keep their stored windows — and is
+ignored when `scope` is `"segment"` or `"sub_segment"`. It is **not** the `timeout` field
+on `insights-behavior-segment-get`: that one is free text (`"30 minutes"`) and passing the
+string is a 400. Whatever window was applied comes back as `conversion.timeout_ms`.
+
 | Field | Type | Nullable | Description |
 |---|---|---|---|
 | `schema_version` | `"v2"` | No | Discriminator. |
@@ -140,6 +150,7 @@ Three properties of `user_ids` you must carry into any answer:
 | `denominator` | number | No | Devices that reached the conversion query's qualifying step. |
 | `numerator` | number | No | Devices that also reached the converting step. A real `0` means measured zero conversions, not missing data. |
 | `conversion_rate` | number | Yes | `numerator / denominator`, between 0 and 1. **Null when the denominator is 0** — report that as "no qualifying devices in this window", never as 0%. |
+| `timeout_ms` | number | Yes | The journey window these numbers were measured over, in milliseconds — how long a device had from the first step to the last. Echoes `timeoutMs` when you passed one, otherwise the segment's stored window. **Null means the stored query names none**, so the window is unknown — say so rather than implying there was no limit. This is a property of the rate, not of the segment: two calls with different `timeoutMs` give different rates over the same `time_range`. |
 
 #### SubSegmentCount (`sub_segments[]`)
 

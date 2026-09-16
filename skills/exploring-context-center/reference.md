@@ -18,7 +18,7 @@ from this set. Each maps to an `assetType` value on `context-center-asset-get` /
 | `critical_event` | `critical-event` | the raw-event matcher; its raw match SQL (`expression`) is hidden — use name + description |
 | `dimension` | `dimension` | |
 | `template` | `template` | |
-| `insights_finder` | `insights-finder` | **list-only** — `context-center-asset-list` only, no get-by-id route upstream |
+| `insights_finder` | — | retired 2026-09-16. It had no get-by-id route, and its list rows carry no id and no description, so every entry came back as an indistinguishable `{ "name": "..." }` with nothing to follow up on. |
 | `dashboard` | `dashboard` | bundles saved analysis widgets |
 | `behavior_segment` | — | **NOT a Context Center asset.** `asset_id` is an Insights segment id (e.g. `arch_ccc_dlv`) — pass it to `insights-behavior-segment-get` as `segmentId`. See `retrieving-behavior-segment-details`. |
 | `segment` | — | retired 2026-08-27. It collided with Insights behavior segments and, across prod, only ever held the system-created `__conviva_identity__` client_id→identity file. "Segment" now always means a behavior segment. |
@@ -63,7 +63,7 @@ critical_event (ce_*)   matches →     raw events  (raw match SQL hidden)
 | `source_info.type` | `"asset"` for asset-derived knowledge |
 | `source_info.detail.asset_id` | the asset this summarizes (the handle into the asset layer) |
 | `source_info.detail.asset_type` | which `assetType` to pass to `context-center-asset-get` (see map above) |
-| `categories` / `terms` | asset-type tags used by semantic search |
+| `categories` / `terms` | the knowledge's own categories (same vocabulary as `assetType`) and its keyword tags. Both are response fields; only `categories` is a search parameter. |
 | `score` | semantic-search similarity (0–1); **null** outside semantic search |
 | `is_active` | only active entries are returned by search/list by default |
 

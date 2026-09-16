@@ -101,7 +101,11 @@ not there.
    call `insights-behavior-segment-analyze` with the `segmentId` and a time window
    (ISO 8601 **with a timezone offset** — see `querying-predefined-metrics` for
    resolving a day to a customer-local range). Narrow `scope` when only one figure
-   is needed; `all` over a long window can take minutes.
+   is needed; `all` over a long window can take minutes. When the user asks about a
+   specific conversion window — "how many converted **within an hour**" — pass
+   `timeoutMs` in milliseconds (`3600000`); otherwise omit it and the segment's own
+   stored window is used. Either way, report the window from the response's
+   `conversion.timeout_ms`, not from the `timeout` text on the definition.
 5. **Sample example users one population at a time.**
    `insights-behavior-segment-sample-users` returns user ids for **one** segment *or*
    **one** sub-segment per call. When the user asks for several segments, or for several
@@ -167,6 +171,14 @@ not there.
   than presenting the remainder as the whole answer.
 - **`conversion_rate` is `null` when the denominator is 0.** Do not render that
   as 0%.
+- **A conversion rate belongs to a window, so state it.** `conversion.timeout_ms`
+  is how long a device had to get from the first step of the journey to the last —
+  the segment's stored window, or the `timeoutMs` you passed. Two calls with
+  different windows produce different rates over the same dates, so a rate quoted
+  without its window is not reproducible. A `null` there means the stored query
+  names no window; say it is unknown rather than implying there was no limit.
+  This is a different field from the definition's free-text `timeout`, and the
+  two need not agree — the one that produced the number is `conversion.timeout_ms`.
 - **Never fabricate.** Do not invent fields, events, or metrics the response does
   not contain.
 
@@ -304,6 +316,9 @@ you actually tested, and the disclosure line is there.
 | Calling `insights-behavior-segment-get` expecting numbers | `get` is definitions only; numbers come from `-analyze` |
 | Firing several `-sample-users` calls in one turn to cover several segments/sub-segments | One call per population, sequentially — parallel calls 503 each other |
 | Asking the user for a time range before sampling users | Omit both dates — the tool samples the account's own yesterday and echoes the window in `time_range` |
+| Passing the definition's `timeout` text (`"30 minutes"`) as `timeoutMs` | `timeoutMs` is a whole number of milliseconds — `1800000`. The string is a 400 |
+| Quoting a conversion rate without the window it was measured over | State `conversion.timeout_ms` alongside it; a different window gives a different rate |
+| Sending `timeoutMs` on every call to look thorough | Omit it unless the user named a window — otherwise you are silently re-defining the segment |
 | Running `scope: "all"` when the user asked one question | Narrow the scope; a full run can take minutes |
 | Applying v1's `evidence_level` / `nc_total` rules to a v2 response | Branch on `schema_version` first |
 

@@ -79,13 +79,16 @@ with `context-center-nexa-semantic-search`, then hydrate by id with
 2. **Discover via knowledge.** You usually start without an id.
    - **By meaning / phrasing, or to browse a category** → `context-center-nexa-semantic-search`
      with a free-text `query` (vector ANN, returns a `score`; rank by it). This is
-     the only discovery path — there is no plain browse tool. Scope it with
-     `categories` (see `context-center-nexa-categories-list` if unsure of valid
-     values) and optionally add `terms` for exact substrings alongside the
-     semantic query.
-   - Scope `categories` to the asset type you want (`pattern`, `metric`,
-     `dimension`, `critical_event`, `dashboard`, `customer_brief`), or
-     `context-center-nexa-categories-list` for the account's real list.
+     the only discovery path — there is no plain browse tool. Put every word that
+     matters into `query`; there is no separate keyword parameter.
+   - **One category per call.** `categories` takes a single-element array
+     (`["pattern"]`). Naming several is rejected with an error: a knowledge is
+     returned only if it carries every category given, and these categories are
+     mutually exclusive, so a multi-category search returns nothing. The nine
+     valid values are the same on every account — `business`, `metric`,
+     `dashboard`, `pattern`, `critical-event`, `dimension`,
+     `session-definition`, `html-report`, `behavior-segment`.
+     `context-center-nexa-categories-list` says what each one holds.
    - **Search every plausible category, not just the one your framing suggests.**
      A behaviour you would call a *pattern* may be stored as a *critical event*;
      a value you would call a *metric* may be a *dimension*. Fire one search per
@@ -154,7 +157,7 @@ stall on a question that has an obvious answer.
 
 | You have… | Use |
 |---|---|
-| A concept in the user's own words, or an exact category/keyword | `context-center-nexa-semantic-search` (`query` and/or `terms`, scoped by `categories`; rank by `score`) |
+| A concept in the user's own words, or an exact category/keyword | `context-center-nexa-semantic-search` (`query`, scoped by one `categories` value; rank by `score`) |
 | Need the list of valid categories | `context-center-nexa-categories-list` |
 | Want everything in a category (no specific concept) | `context-center-nexa-semantic-search` scoped to that `categories` value (discovery is meaning-based; there is no plain browse tool) |
 | An exact asset id already | Skip search — call `context-center-asset-get` directly |
@@ -168,8 +171,6 @@ stall on a question that has an obvious answer.
   are searchable, but there is no asset get tool for them in this MCP (dashboard
   asset tools were removed). Report the summary and the `asset_id`; don't try to
   hydrate.
-- **`insights_finder` is list-only** — `context-center-asset-list` with
-  `assetType: insights-finder`, no get-by-id.
 - **Knowledge `score`** is only populated by semantic search. A higher score is a
   closer semantic match; still confirm relevance against the hit's `summary`.
 - **Lists return `{ items, pagination }`.** Check `pagination.hasMore` — and
