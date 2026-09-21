@@ -86,15 +86,24 @@ timezone-aware datetime is step 4 below.)
    - **If you don't know the customer's timezone, ask** (or state the assumption)
      rather than silently defaulting to UTC — the cutoff depends on it.
    - Confirm the resolved window with the user when the request was vague.
-5. **Run it.** Call `metric-query-run` with `metricId`, the timezone-aware
+5. **Submit one logical run.** Call `metric-query-run` with `metricId`, the timezone-aware
    `startDate`/`endDate` from step 4, and any `patternId` / `groupByDimensionIds`.
-   Nothing else — no SQL, no payload.
-6. **Read the result for what it is.** The response is a **per-day series**, not
+   Generate a random UUID as `idempotencyKey`; reuse that `idempotencyKey` when
+   retrying the same inputs after a lost submit response. Changed inputs are a
+   new logical run with a new key. Retain every returned `jobId` with its inputs.
+6. **Wait for each result.** A job handle is not metric data. Wait for the initial
+   `pollAfterMs`, then batch all unfinished IDs (up to 20) through `async-job-get`.
+   Wait `nextPollAfterMs` before the next batch; retain only `queued`/`running`
+   IDs for polling until every job is `succeeded` or `failed`. A `not_found`
+   retrieval ends polling for that ID: report its `not_found_or_expired` error.
+   Use `async-job-list` only to recover lost IDs. On `succeeded`, read
+   `result.data`; a failed job supplies no numbers.
+7. **Read the result for what it is.** The metric result is a **per-day series**, not
    a total, plus a `notes` array describing how to read *this* result — read the
    notes; they are authoritative for the call you just made. Then apply
    **What the numbers actually are** and **Verify before you conclude** below
    before you write a single figure into your answer.
-7. **Report only real returned values.** Report the value(s) with their date
+8. **Report only real returned values.** Report the value(s) with their date
    window and any breakdown; pair percentages with raw counts; do not overstate
    precision. **If `metric-query-run` errors** (e.g. a 422 "could
    not run metric …", a 5xx, or a timeout), you have **no data** — **never
@@ -266,6 +275,10 @@ When you fall back, tell the user the answer came from open-ended Nexa analysis,
 not a predefined metric. **Do not default to `nexa-analyze`** when a predefined
 metric fits — resolve and run the metric first.
 
+Submit that Nexa analysis with its own `idempotencyKey`, retain the `jobId`, and
+follow step 6's batch polling loop. Nexa `progress.answerPreview` is provisional,
+never a final answer; report only `result.data.answer` after `succeeded`.
+
 ## Notes & gotchas
 
 - **No raw SQL — ever.** If the user pastes SQL or a raw query payload, explain
@@ -278,7 +291,7 @@ metric fits — resolve and run the metric first.
   analytics backend, which can return an error (422 rejected payload, 5xx, timeout). When
   it does, there is no value to report — do not invent one, do not "estimate from
   what you'd expect," do not reuse a number from an earlier turn as if it were
-  this window's result. Surface the failure and fall back per step 7.
+   this window's result. Surface the failure and fall back per step 8.
 - **Read the `notes` on the result.** They are generated per call from the
   actual metric and breakdown, so they beat any general rule here when the two
   seem to disagree.

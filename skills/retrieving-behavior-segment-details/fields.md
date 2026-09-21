@@ -2,7 +2,8 @@
 
 Complete field reference for the `insights-behavior-segment-*` tools.
 
-Which section applies is decided by the `schema_version` field on every response.
+For domain data, choose the section using `schema_version`. Async analysis submit
+responses are job envelopes; the domain data appears in `result.data` on success.
 
 ---
 
@@ -122,6 +123,13 @@ Three properties of `user_ids` you must carry into any answer:
 
 ### `insights-behavior-segment-analyze` — computed figures
 
+Submit exactly one required `scope`: `segment`, `conversion`, or `sub_segment`.
+The last requires `subSegmentId`. Several populations require independent jobs;
+sub-segment counts overlap and must never be summed. Follow the skill's submit and
+batch-poll steps. The table below describes `result.data` after `succeeded`, not
+the initial job handle. Each job executes one query atomically; a failed job has
+an envelope `error` and no result.
+
 **The one optional input worth knowing: `timeoutMs`.** The conversion rate is measured
 over the journey window the segment itself stores — how long a device may take from the
 first step of the conversion journey to the last. Pass `timeoutMs` (a whole number of
@@ -138,17 +146,17 @@ string is a 400. Whatever window was applied comes back as `conversion.timeout_m
 | `segment_id` / `segment_name` / `customer_id` | string | No | Which segment was measured. |
 | `time_range` | `{start, end}` | No | The window actually queried, echoed back with its timezone offset. |
 | `bot_filtered` | boolean | No | Always `false`. The stored queries carry no bot exclusion and none is added, so **bot traffic is included in every count below**. Disclose this whenever you report one. |
-| `conversion` | Conversion | Yes | Present when `scope` was `all` or `conversion`. Null when the segment has no stored conversion query or the query failed — check `errors[]`. |
-| `segment` | `{unique_devices}` | Yes | Present when `scope` was `all` or `segment`. |
-| `sub_segments` | SubSegmentCount[] | Yes | Present when `scope` was `all` or `sub_segment`. |
-| `errors` | PartError[] | No | Parts that did not complete. Empty on a fully successful call. A non-empty array means the response is **partial** — say what is missing rather than presenting the rest as the whole answer. |
+| `conversion` | Conversion | Yes | Present for `scope: "conversion"`; other scopes omit it. `conversion: null` on success means missing or unparseable conversion data — unknown, not zero; read the domain warning. A missing stored query or execution failure instead fails the job. |
+| `segment` | `{unique_devices}` | Yes | Present for `scope: "segment"`; other scopes omit it. |
+| `sub_segments` | SubSegmentCount[] | Yes | Contains the one requested sub-segment for `scope: "sub_segment"`; other scopes omit it. |
+| `errors` | PartError[] | No | Inspect `result.data.errors` even when the job is `succeeded`: a completed query can report missing/unparseable conversion data here. Explain the warning rather than inventing a figure. Execution failures instead use a terminal `failed` envelope's `error` with no result. |
 
 #### Conversion (`conversion`)
 
 | Field | Type | Nullable | Description |
 |---|---|---|---|
 | `denominator` | number | No | Devices that reached the conversion query's qualifying step. |
-| `numerator` | number | No | Devices that also reached the converting step. A real `0` means measured zero conversions, not missing data. |
+| `numerator` | number | No | Devices that also reached the converting step. A parsed `numerator: 0` with a positive denominator means a measured zero conversion rate, unlike a missing conversion object. |
 | `conversion_rate` | number | Yes | `numerator / denominator`, between 0 and 1. **Null when the denominator is 0** — report that as "no qualifying devices in this window", never as 0%. |
 | `timeout_ms` | number | Yes | The journey window these numbers were measured over, in milliseconds — how long a device had from the first step to the last. Echoes `timeoutMs` when you passed one, otherwise the segment's stored window. **Null means the stored query names none**, so the window is unknown — say so rather than implying there was no limit. This is a property of the rate, not of the segment: two calls with different `timeoutMs` give different rates over the same `time_range`. |
 

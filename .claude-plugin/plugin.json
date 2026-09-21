@@ -1,7 +1,7 @@
 {
   "name": "conviva-dpi-mcp",
   "displayName": "Conviva DPI MCP",
-  "version": "1.4.2",
+  "version": "1.5.1",
   "description": "Conviva DPI MCP tools and skills — explore Context Center patterns & metrics, run predefined metrics, retrieve behavior-segment details, and find and analyze session replays.",
   "author": {
     "name": "Conviva"

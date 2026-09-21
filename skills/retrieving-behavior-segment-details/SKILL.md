@@ -63,7 +63,9 @@ state that the decision is the owning team's, and do **not** take a position.
 
 ## Two response shapes — branch on `schema_version`
 
-Every `insights-*` response carries a `schema_version` field.
+Definition, list, sample, and analysis-result data carry `schema_version`.
+An async submit returns a job envelope first; inspect the analysis shape in
+`result.data` only after the job succeeds.
 
 - **`"v2"`** — the current schema. The segment is described in business terms and
   has **sub-segments**. Live numbers come only from
@@ -98,28 +100,41 @@ not there.
    `segmentName`.
 4. **Get numbers only if asked.** `get` returns definitions, never counts. When the
    user asks how big a segment is, how it converts, or which sub-segment performs best,
-   call `insights-behavior-segment-analyze` with the `segmentId` and a time window
+   submit `insights-behavior-segment-analyze` with the `segmentId` and a time window
    (ISO 8601 **with a timezone offset** — see `querying-predefined-metrics` for
-   resolving a day to a customer-local range). Narrow `scope` when only one figure
-   is needed; `all` over a long window can take minutes. When the user asks about a
+   resolving a day to a customer-local range). Submit only the scopes the question needs:
+   `scope: "segment"` for its device count, `scope: "conversion"` for its conversion,
+   or `scope: "sub_segment"` with `subSegmentId` for one sub-segment. Each call runs
+   one independent query; several requested populations need separate submits and
+   can be submitted together. Generate one random UUID `idempotencyKey` per logical
+   submit; reuse that `idempotencyKey` only when retrying the same inputs after a
+   lost response. Retain every returned `jobId` with its scope and sub-segment.
+   When the user asks about a
    specific conversion window — "how many converted **within an hour**" — pass
    `timeoutMs` in milliseconds (`3600000`); otherwise omit it and the segment's own
-   stored window is used. Either way, report the window from the response's
-   `conversion.timeout_ms`, not from the `timeout` text on the definition.
-5. **Sample example users one population at a time.**
+   stored window is used. Report the applied window from the successful result's
+   `conversion.timeout_ms`, not the definition's `timeout` text.
+5. **Batch poll to completion.** After the initial `pollAfterMs`, pass unfinished
+   IDs (up to 20) together to `async-job-get`, then wait `nextPollAfterMs` between
+   batches. Keep polling `queued`/`running` jobs until each is `succeeded` or
+   `failed`. Read figures only from `result.data` on `succeeded`; report failed
+   scopes separately. A `not_found` retrieval ends polling for that ID: report
+   `not_found_or_expired`. Use `async-job-list` only to recover lost IDs.
+   If the question instead needs Nexa,
+   use the same key/ID/poll lifecycle; its answer preview is provisional, never
+   final before `succeeded`. Sub-segments overlap; never sum their counts.
+6. **Sample example users one population at a time.**
    `insights-behavior-segment-sample-users` returns user ids for **one** segment *or*
    **one** sub-segment per call. When the user asks for several segments, or for several
    sub-segments, call it **sequentially**: one call, wait for the response, then the next.
-   Never put two of these calls in the same turn, and never run one while an
-   `insights-behavior-segment-analyze` call is still in flight — the analytics backend
-   admits only a couple of queries at a time, so parallel calls do not finish sooner,
-   they make each other fail with a 503. If the user gave **no** time range, do not ask
+   Keep sampling sequential and wait for any submitted analysis jobs to finish
+   before sampling; this tool still executes synchronously. If the user gave **no** time range, do not ask
    for one — omit `startDate`/`endDate` and the tool samples **yesterday in the account's
    own timezone**, read from the c3 account's portal settings. Report the window from the
    response's `time_range`: it carries that offset (e.g. `-04:00`, `+08:00`) and is the
    window the query actually ran against, so quote it rather than saying "yesterday" and
    leaving the day ambiguous. (Both dates or neither; one alone is a 422.)
-6. **Deliver** the analysis: open with a one-line scope, distinguish observations
+7. **Deliver** the analysis: open with a one-line scope, distinguish observations
    from interpretations, and tie every confidence claim to the evidence.
 
 ## Interpreting a v2 response
@@ -167,8 +182,14 @@ not there.
   it from `must`/`must_not`/`timeout`; do not claim to have the query.
 - **A `null` count means unknown, not zero.** The analyze tool reports `null`
   when the backend returned nothing for that population.
-- **Read `errors[]`.** A partial response is normal. Name what is missing rather
-  than presenting the remainder as the whole answer.
+- **Account for every requested scope.** Async queries succeed or fail independently.
+  Name any failed or missing scope rather than presenting successful scopes as the
+  whole answer. Read `result.data.errors` even when the job is `succeeded`:
+  a completed query can carry domain warnings. `conversion: null` with a warning
+  means missing or unparseable conversion data — unknown, not zero conversions.
+  A parsed `numerator: 0` with a positive denominator is a measured zero conversion
+  rate. Execution failures instead use a terminal `failed` envelope's `error`
+  with no result.
 - **`conversion_rate` is `null` when the denominator is 0.** Do not render that
   as 0%.
 - **A conversion rate belongs to a window, so state it.** `conversion.timeout_ms`
@@ -319,7 +340,7 @@ you actually tested, and the disclosure line is there.
 | Passing the definition's `timeout` text (`"30 minutes"`) as `timeoutMs` | `timeoutMs` is a whole number of milliseconds — `1800000`. The string is a 400 |
 | Quoting a conversion rate without the window it was measured over | State `conversion.timeout_ms` alongside it; a different window gives a different rate |
 | Sending `timeoutMs` on every call to look thorough | Omit it unless the user named a window — otherwise you are silently re-defining the segment |
-| Running `scope: "all"` when the user asked one question | Narrow the scope; a full run can take minutes |
+| Submitting unrequested populations | Choose one required scope per job and batch poll only the jobs the question needs |
 | Applying v1's `evidence_level` / `nc_total` rules to a v2 response | Branch on `schema_version` first |
 
 ### v1

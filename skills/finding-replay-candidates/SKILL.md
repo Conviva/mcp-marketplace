@@ -50,7 +50,7 @@ Send `nexa-analyze` a `userMessage` that satisfies all four:
 matched-devices query is capped at one day per call, but that is Nexa's problem,
 not yours — its own instructions tell it to split a longer range into
 consecutive one-day calls inside a single analysis. Never fan out into one
-`nexa-analyze` job per day: each job costs a separate run of up to ~30 minutes
+`nexa-analyze` job per day: each job has a deadline of 35 minutes including queue wait
 and returns a fragment you then have to stitch. Ask for the full range once.
 
 Template — swap in the account, behavior, and window; keep the structure:
@@ -83,12 +83,20 @@ or a fresh Nexa analysis that asks for a count.
    ranges are fine — pass them through whole. Do not guess a timezone; if the
    user gave a bare local date, ask which timezone they mean.
 2. **Submit once.** Call `nexa-analyze` with the rewritten `userMessage`, the
-   `c3AccountName`, and `fallbackReason: no_matching_metric`. It returns a
-   `jobId` immediately. **One job for the whole window** — never one per day.
-3. **Poll.** Call `nexa-analyze-result` with that `jobId` roughly every 30
-   seconds until `status` is `succeeded` or `failed`. It can take up to ~30
-   minutes — say so once, then poll quietly. Do not narrate every poll.
-4. **Extract the candidates** from the answer text: clientId, start, end,
+   `c3AccountName`, and `fallbackReason: no_matching_metric`. Generate a random UUID
+   `idempotencyKey`; reuse that `idempotencyKey` for the same logical submit if its
+   response was lost. Retain every returned `jobId` with its question and window.
+   **One job for the whole window** — never one per day.
+3. **Poll to completion.** Wait the initial `pollAfterMs`, then batch unfinished
+   IDs (up to 20) through `async-job-get`. Wait `nextPollAfterMs` before polling
+   again, retaining only `queued`/`running` IDs until each is `succeeded` or
+   `failed`. A `not_found` retrieval ends polling for that ID; report it as below.
+   Use `async-job-list` only to recover lost IDs. Analysis can take up to 35 minutes
+   including queue wait — say so once, then poll quietly. A stream interruption
+   does not call for another submit: keep the same job ID while the service recovers
+   its stable conversation. Nexa `progress.answerPreview` is provisional, never
+   a final answer or a source of candidate rows.
+4. **Extract the candidates** from `result.data.answer` only after `succeeded`: clientId, start, end,
    has-replay, device.
 5. **Present, then STOP.** Show the table. Mark clearly which rows have a
    session replay — **only those can be downloaded**. Ask which one to analyze.
