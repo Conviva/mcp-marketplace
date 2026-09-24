@@ -41,9 +41,10 @@ so import this repo as one:
    https://github.com/Conviva/mcp-marketplace
    ```
 
-2. In the `conviva` tab that appears, **Add** **Conviva DPI MCP**
-   (`conviva-dpi-mcp`), then complete the browser login for the bundled
-   `conviva` server.
+2. Back on the **Personal** tab, a **Conviva** section now lists **Conviva DPI
+   MCP** (`conviva-dpi-mcp`) — click **Add**, then complete the browser login
+   for the bundled `conviva` server. A **Conviva** tab filters to the same
+   entry.
 
 To roll it out org-wide instead, a **Teams/Enterprise** admin imports the same
 URL once at **Dashboard → Plugins → Add Marketplace → Import from Repo**;
@@ -130,7 +131,7 @@ itself grant access to data. You must be an authorized Conviva user.
 
 ## Version
 
-`1.5.1` — see the release tags for history. Each published version
+`1.5.2` — see the release tags for history. Each published version
 corresponds to the identically-tagged commit in Conviva's internal repository.
 
 This repository is **generated** on each release from that internal source, and

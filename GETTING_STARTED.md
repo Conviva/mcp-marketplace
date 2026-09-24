@@ -217,8 +217,9 @@ install the plugin from it.
 
    ![Cursor's Import Marketplace dialog: the repo URL in the Repository field and Scope set to User](./images/getting-started/cursor-import-marketplace.png)
 
-4. The `conviva` marketplace now has its own tab. Find **Conviva DPI MCP**
-   (`conviva-dpi-mcp`) and click **Add**.
+4. Back on the **Personal** tab, a **Conviva** section now lists **Conviva DPI
+   MCP** (`conviva-dpi-mcp`) — click **Add**. The marketplace also gets its own
+   **Conviva** tab, which filters to the same entry.
 
 **For a whole team (admin, once per org — Teams/Enterprise):** open **Dashboard
 → Plugins → Team Marketplaces → Add Marketplace**, choose **Import from Repo**,
